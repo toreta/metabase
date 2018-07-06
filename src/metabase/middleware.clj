@@ -188,9 +188,14 @@
                             :script-src  ["'unsafe-inline'"
                                           "'unsafe-eval'"
                                           "'self'"
+                                          "*.segment.com"
+                                          "*.segment.io"
+                                          "*.fullstory.com"
+                                          "*.mxpnl.com"
+                                          "*.googletagmanager.com"
                                           "https://maps.google.com"
                                           "https://apis.google.com"
-                                          "https://www.google-analytics.com" ; Safari requires the protocol
+                                          "*.google-analytics.com" ; Safari requires the protocol
                                           "https://*.googleapis.com"
                                           "*.gstatic.com"
                                           (when config/is-dev?
@@ -210,6 +215,10 @@
                                           "'self' data:"]
                             :connect-src ["'self'"
                                           "metabase.us10.list-manage.com"
+                                          "*.segment.io"
+                                          "*.segment.com"
+                                          "*.fullstory.com"
+                                          "*.mixpanel.com"
                                           (when config/is-dev?
                                             "localhost:8080 ws://localhost:8080")]}]
                 (format "%s %s; " (name k) (apply str (interpose " " vs)))))})
@@ -221,8 +230,8 @@
 ;; TODO - it would be nice if we could make this a proper link in the UI; consider enabling markdown parsing
 
 #_(defn- public-key-pins-header []
-  (when-let [k (ssl-certificate-public-key)]
-    {"Public-Key-Pins" (format "pin-sha256=\"base64==%s\"; max-age=31536000" k)}))
+   (when-let [k (ssl-certificate-public-key)]
+     {"Public-Key-Pins" (format "pin-sha256=\"base64==%s\"; max-age=31536000" k)}))
 
 (defn- api-security-headers [] ; don't need to include all the nonsense we include with index.html
   (merge (cache-prevention-headers)

@@ -42,6 +42,7 @@ export const login = createThunkAction(LOGIN, function(
       MetabaseCookies.setSessionCookie(newSession.id);
 
       MetabaseAnalytics.trackEvent("Auth", "Login");
+      MetabaseAnalytics.identify(credentials.username);
       // TODO: redirect after login (carry user to intended destination)
       await dispatch(refreshCurrentUser());
       dispatch(push(redirectUrl || "/"));
@@ -59,14 +60,16 @@ export const loginGoogle = createThunkAction(LOGIN_GOOGLE, function(
 ) {
   return async function(dispatch, getState) {
     try {
+      let token = googleUser.getAuthResponse().id_token
       let newSession = await SessionApi.createWithGoogleAuth({
-        token: googleUser.getAuthResponse().id_token,
-      });
+        token
+      })
 
       // since we succeeded, lets set the session cookie
       MetabaseCookies.setSessionCookie(newSession.id);
 
       MetabaseAnalytics.trackEvent("Auth", "Google Auth Login");
+      MetabaseAnalytics.identify(token);
 
       // TODO: redirect after login (carry user to intended destination)
       await dispatch(refreshCurrentUser());
@@ -95,6 +98,7 @@ export const logout = createThunkAction(LOGOUT, function() {
       SessionApi.delete({ session_id: sessionId });
     }
     MetabaseAnalytics.trackEvent("Auth", "Logout");
+    MetabaseAnalytics.reset();
 
     dispatch(push("/auth/login"));
 

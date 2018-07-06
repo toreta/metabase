@@ -1,25 +1,30 @@
-/*global ga*/
+/*global analytics*/
 /* @flow */
 
 import MetabaseSettings from "metabase/lib/settings";
 
 import { DEBUG } from "metabase/lib/debug";
 
-// Simple module for in-app analytics.  Currently sends data to GA but could be extended to anything else.
+// Simple module for in-app analytics.  Currently sends data to Segment.com but could be extended to anything else.
 const MetabaseAnalytics = {
   // track a pageview (a.k.a. route change)
   trackPageView: function(url: string) {
     if (url) {
-      // scrub query builder urls to remove serialized json queries from path
-      url = url.lastIndexOf("/q/", 0) === 0 ? "/q/" : url;
-
-      const { tag } = MetabaseSettings.get("version");
-
-      // $FlowFixMe
-      ga("set", "dimension1", tag);
-      ga("set", "page", url);
-      ga("send", "pageview", url);
+      analytics.page();
     }
+  },
+
+  identify: function(
+    id: string
+  ) {
+    const { tag } = MetabaseSettings.get("version")
+    analytics.identify(id, {
+      version: tag
+    })
+  },
+
+  reset: function() {
+    analytics.reset()
   },
 
   // track an event
@@ -29,13 +34,9 @@ const MetabaseAnalytics = {
     label?: ?(string | number | boolean),
     value?: ?number,
   ) {
-    const { tag } = MetabaseSettings.get("version");
-
     // category & action are required, rest are optional
     if (category && action) {
-      // $FlowFixMe
-      ga("set", "dimension1", tag);
-      ga("send", "event", category, action, label, value);
+      analytics.track(action, { category, label, value });
     }
     if (DEBUG) {
       console.log("trackEvent", { category, action, label, value });
